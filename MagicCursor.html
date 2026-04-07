@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+    }
+    .trail {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: fade 1s forwards;
+    }
+    @keyframes fade {
+        to {
+            opacity: 0;
+            transform: scale(2);
+        }
+    }
+</style>
+</head>
+<body>
+<script>
+    document.addEventListener('mousemove', (e) => {
+        const trail = document.createElement('div');
+        trail.className = 'trail';
+        trail.style.left = e.pageX + 'px';
+        trail.style.top = e.pageY + 'px';
+        trail.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        document.body.appendChild(trail);
+        
+        setTimeout(() => trail.remove(), 1000);
+    });
+</script>
+</body>
+</html>
