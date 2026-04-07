@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #1e3c72, #2a5298, #6dd5ed);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #ffe66d;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 110px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .cell {
+      width: 110px;
+      height: 110px;
+      font-size: 42px;
+      font-weight: bold;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      background: #ffffff;
+      color: #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    .cell:hover {
+      transform: scale(1.05);
+      background: #f1f1f1;
+    }
+
+    .cell.x {
+      color: #ff4d6d;
+      background: #fff0f3;
+    }
+
+    .cell.o {
+      color: #0066ff;
+      background: #eef4ff;
+    }
+
+    #status {
+      font-size: 22px;
+      margin: 10px 0 15px;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .restart-btn {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #ffe66d;
+      color: #333;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .restart-btn:hover {
+      background: #ffd43b;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Tic Tac Toe</h1>
+
+    <div class="board">
+      <button class="cell" onclick="play(0)"></button>
+      <button class="cell" onclick="play(1)"></button>
+      <button class="cell" onclick="play(2)"></button>
+      <button class="cell" onclick="play(3)"></button>
+      <button class="cell" onclick="play(4)"></button>
+      <button class="cell" onclick="play(5)"></button>
+      <button class="cell" onclick="play(6)"></button>
+      <button class="cell" onclick="play(7)"></button>
+      <button class="cell" onclick="play(8)"></button>
+    </div>
+
+    <div id="status">Player X's turn</div>
+    <button class="restart-btn" onclick="resetGame()">Restart Game</button>
+  </div>
+
+  <script>
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let gameOver = false;
+
+    const cells = document.getElementsByClassName("cell");
+    const statusText = document.getElementById("status");
+
+    function playTone(freq, duration, type = "sine", volume = 0.2) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const ctx = new AudioContextClass();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration / 1000);
+      osc.stop(ctx.currentTime + duration / 1000);
+    }
+
+    function playClickSound() {
+      playTone(500, 120, "square", 0.12);
+    }
+
+    function playClapSound() {
+      // short happy sequence
+      setTimeout(() => playTone(700, 120, "triangle", 0.2), 0);
+      setTimeout(() => playTone(900, 120, "triangle", 0.2), 140);
+      setTimeout(() => playTone(1100, 150, "triangle", 0.2), 280);
+      setTimeout(() => playTone(900, 150, "triangle", 0.2), 460);
+    }
+
+    function playSadSound() {
+      // descending tones
+      setTimeout(() => playTone(400, 180, "sawtooth", 0.18), 0);
+      setTimeout(() => playTone(320, 180, "sawtooth", 0.18), 200);
+      setTimeout(() => playTone(240, 220, "sawtooth", 0.18), 420);
+    }
+
+    function play(index) {
+      if (board[index] !== "" || gameOver) return;
+
+      playClickSound();
+
+      board[index] = currentPlayer;
+      cells[index].innerText = currentPlayer;
+      cells[index].classList.add(currentPlayer.toLowerCase());
+
+      if (checkWinner()) {
+        statusText.innerText = "🎉 Player " + currentPlayer + " wins!";
+        gameOver = true;
+        playClapSound();
+        return;
+      }
+
+      if (!board.includes("")) {
+        statusText.innerText = "😢 It's a draw!";
+        gameOver = true;
+        playSadSound();
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      statusText.innerText = "Player " + currentPlayer + "'s turn";
+    }
+
+    function checkWinner() {
+      const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+
+      for (let w of wins) {
+        if (
+          board[w[0]] &&
+          board[w[0]] === board[w[1]] &&
+          board[w[1]] === board[w[2]]
+        ) {
+          cells[w[0]].style.background = "#90ee90";
+          cells[w[1]].style.background = "#90ee90";
+          cells[w[2]].style.background = "#90ee90";
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function resetGame() {
+      board = ["", "", "", "", "", "", "", "", ""];
+      currentPlayer = "X";
+      gameOver = false;
+      statusText.innerText = "Player X's turn";
+
+      for (let i = 0; i < cells.length; i++) {
+        cells[i].innerText = "";
+        cells[i].className = "cell";
+        cells[i].style.background = "#ffffff";
+      }
+    }
+  </script>
+</body>
+</html>
