@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        font-family: Arial;
+        padding: 20px;
+    }
+    button {
+        padding: 15px 30px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        10% { transform: translate(-10px, -10px) rotate(-1deg); }
+        20% { transform: translate(10px, 10px) rotate(1deg); }
+        30% { transform: translate(-10px, 10px) rotate(-1deg); }
+        40% { transform: translate(10px, -10px) rotate(1deg); }
+        50% { transform: translate(-10px, -10px) rotate(-1deg); }
+        60% { transform: translate(10px, 10px) rotate(1deg); }
+        70% { transform: translate(-10px, 10px) rotate(-1deg); }
+        80% { transform: translate(10px, -10px) rotate(1deg); }
+        90% { transform: translate(-10px, -10px) rotate(-1deg); }
+    }
+    body.shake {
+        animation: shake 0.5s infinite;
+    }
+</style>
+</head>
+<body>
+    <h1>Welcome to My Website!</h1>
+    <p>This is a perfectly normal website...</p>
+    <button id="dontClick">DON'T CLICK THIS</button>
+    
+<script>
+    document.getElementById('dontClick').addEventListener('click', () => {
+        document.body.classList.add('shake');
+        setTimeout(() => {
+            document.body.classList.remove('shake');
+        }, 5000);
+    });
+</script>
+</body>
+</html>
