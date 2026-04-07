@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Chinese Dragon - Mouse Follower</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;
+background:linear-gradient(180deg,#1a0a2e 0%,#0d0518 50%,#050208 100%);
+cursor:crosshair;font-family:Arial,sans-serif}
+canvas{display:block;width:100vw;height:100vh}
+.note{position:fixed;top:10px;left:14px;color:rgba(255,255,255,0.5);
+font-size:13px;user-select:none;pointer-events:none;letter-spacing:.4px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<!-- <div class="note">🐉 Mouse move karo — Chinese Dragon follow karega!</div> -->
+<script>
+const canvas=document.getElementById("c");
+const ctx=canvas.getContext("2d");
+let W=canvas.width=innerWidth;
+let H=canvas.height=innerHeight;
+addEventListener("resize",()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight});
+
+const mouse={x:W*.5,y:H*.5};
+addEventListener("mousemove",e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+addEventListener("touchmove",e=>{if(e.touches[0]){mouse.x=e.touches[0].clientX;mouse.y=e.touches[0].clientY}},{passive:true});
+
+// Fire particles on click
+const fires=[];
+addEventListener("mousedown",e=>{
+  for(let i=0;i<25;i++){
+    fires.push({x:e.clientX,y:e.clientY,
+      vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*8-3,
+      life:1,r:3+Math.random()*4,
+      color:['#ff4400','#ff8800','#ffcc00','#ffee44'][Math.floor(Math.random()*4)]
+    });
+  }
+});
+
+/* ===== DRAGON BODY SEGMENTS ===== */
+const SEGS=70;
+const SP=11;
+const d=[];
+let t=0,spd=0;
+
+for(let i=0;i<SEGS;i++) d.push({x:W/2-i*SP,y:H/2,a:0});
+
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+function wrap(a){while(a>Math.PI)a-=Math.PI*2;while(a<-Math.PI)a+=Math.PI*2;return a}
+function norm(a){return a+Math.PI/2}
+
+function bodyW(i){
+  const p=i/(SEGS-1);
+  if(p<.06)return lerp(14,22,p/.06);
+  if(p<.2)return lerp(22,28,((p-.06)/.14));
+  if(p<.5)return lerp(28,20,((p-.2)/.3));
+  return lerp(20,4,((p-.5)/.5));
+}
+
+function update(){
+  t+=.02;
+  const head=d[0];
+  const dx=mouse.x-head.x,dy=mouse.y-head.y;
+  const dist=Math.hypot(dx,dy);
+  spd=dist;
+
+  let target=Math.atan2(dy,dx);
+  const coil=clamp(1-dist/140,0,1);
+  target+=Math.sin(t*2.5)*.7*coil;
+
+  head.a+=wrap(target-head.a)*.11;
+  const speed=clamp(dist*.058,0,11);
+  head.x+=Math.cos(head.a)*speed;
+  head.y+=Math.sin(head.a)*speed;
+
+  for(let i=1;i<SEGS;i++){
+    const prev=d[i-1],curr=d[i];
+    const wave=Math.sin(t*2.5-i*.28)*Math.max(0,1-i/SEGS)*3;
+    const tx=prev.x-Math.cos(prev.a)*SP+Math.cos(norm(prev.a))*wave;
+    const ty=prev.y-Math.sin(prev.a)*SP+Math.sin(norm(prev.a))*wave;
+    curr.x=lerp(curr.x,tx,.44);
+    curr.y=lerp(curr.y,ty,.44);
+    const desired=Math.atan2(prev.y-curr.y,prev.x-curr.x);
+    curr.a+=wrap(desired-curr.a)*(.24-i*.002);
+  }
+}
+
+/* ===== COLORS ===== */
+const RED="#cc3333";
+const DARK_RED="#992222";
+const YELLOW="#e8c840";
+const GOLD="#d4a830";
+const CREAM="#f5e6a0";
+const ORANGE="#dd6622";
+const BROWN="#6b3a1f";
+const WHITE="#ffffff";
+const BLACK="#111111";
+
+/* ===== DRAW BODY ===== */
+function drawBody(){
+  // Draw thick red body with yellow belly
+
+  // Body outline curves
+  const leftPts=[], rightPts=[];
+  for(let i=0;i<SEGS;i++){
+    const p=d[i], n=norm(p.a), w=bodyW(i);
+    leftPts.push({x:p.x+Math.cos(n)*w,y:p.y+Math.sin(n)*w});
+    rightPts.push({x:p.x-Math.cos(n)*w,y:p.y-Math.sin(n)*w});
+  }
+
+  // Red body fill
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(leftPts[0].x,leftPts[0].y);
+  for(let i=1;i<leftPts.length-1;i++){
+    const mx=(leftPts[i].x+leftPts[i+1].x)*.5;
+    const my=(leftPts[i].y+leftPts[i+1].y)*.5;
+    ctx.quadraticCurveTo(leftPts[i].x,leftPts[i].y,mx,my);
+  }
+  const last=leftPts.length-1;
+  ctx.lineTo(leftPts[last].x,leftPts[last].y);
+  for(let i=rightPts.length-1;i>0;i--){
+    const mx=(rightPts[i].x+rightPts[i-1].x)*.5;
+    const my=(rightPts[i].y+rightPts[i-1].y)*.5;
+    ctx.quadraticCurveTo(rightPts[i].x,rightPts[i].y,mx,my);
+  }
+  ctx.closePath();
+
+  // Red gradient fill
+  const grd=ctx.createLinearGradient(d[0].x-30,d[0].y-30,d[0].x+30,d[0].y+30);
+  grd.addColorStop(0,"#dd4433");
+  grd.addColorStop(1,"#bb2222");
+  ctx.fillStyle=grd;
+  ctx.fill();
+
+  // Dark red outline
+  ctx.strokeStyle=DARK_RED;
+  ctx.lineWidth=2;
+  ctx.stroke();
+  ctx.restore();
+
+  // Yellow belly stripe
+  ctx.save();
+  ctx.beginPath();
+  const bellyPts=[];
+  for(let i=0;i<SEGS;i++){
+    const p=d[i], n=norm(p.a), w=bodyW(i)*0.55;
+    bellyPts.push({x:p.x-Math.cos(n)*w,y:p.y-Math.sin(n)*w});
+  }
+
+  // Left side of belly
+  const bellyLeft=[];
+  const bellyRight=[];
+  for(let i=0;i<SEGS;i++){
+    const p=d[i], n=norm(p.a);
+    const bw=bodyW(i)*0.35;
+    bellyLeft.push({x:p.x-Math.cos(n)*(bodyW(i)*0.15),y:p.y-Math.sin(n)*(bodyW(i)*0.15)});
+    bellyRight.push({x:p.x-Math.cos(n)*(bodyW(i)*0.75),y:p.y-Math.sin(n)*(bodyW(i)*0.75)});
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(bellyLeft[0].x,bellyLeft[0].y);
+  for(let i=1;i<bellyLeft.length-1;i++){
+    const mx=(bellyLeft[i].x+bellyLeft[i+1].x)*.5;
+    const my=(bellyLeft[i].y+bellyLeft[i+1].y)*.5;
+    ctx.quadraticCurveTo(bellyLeft[i].x,bellyLeft[i].y,mx,my);
+  }
+  for(let i=bellyRight.length-1;i>0;i--){
+    const mx=(bellyRight[i].x+bellyRight[i-1].x)*.5;
+    const my=(bellyRight[i].y+bellyRight[i-1].y)*.5;
+    ctx.quadraticCurveTo(bellyRight[i].x,bellyRight[i].y,mx,my);
+  }
+  ctx.closePath();
+  ctx.fillStyle=CREAM;
+  ctx.fill();
+  ctx.strokeStyle=GOLD;
+  ctx.lineWidth=1;
+  ctx.stroke();
+  ctx.restore();
+
+  // Belly lines (horizontal stripes)
+  ctx.save();
+  ctx.strokeStyle=GOLD;
+  ctx.lineWidth=0.8;
+  for(let i=4;i<SEGS-4;i+=2){
+    const p=d[i],n=norm(p.a);
+    const w1=bodyW(i)*0.2, w2=bodyW(i)*0.7;
+    const x1=p.x-Math.cos(n)*w1, y1=p.y-Math.sin(n)*w1;
+    const x2=p.x-Math.cos(n)*w2, y2=p.y-Math.sin(n)*w2;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ===== SCALES PATTERN ===== */
+function drawScales(){
+  ctx.save();
+  ctx.strokeStyle="rgba(150,30,20,0.35)";
+  ctx.lineWidth=0.6;
+  for(let i=2;i<SEGS-3;i+=1){
+    const p=d[i], n=norm(p.a), w=bodyW(i);
+    // small arc scales on red part
+    const sx=p.x+Math.cos(n)*w*0.3;
+    const sy=p.y+Math.sin(n)*w*0.3;
+    ctx.beginPath();
+    ctx.arc(sx,sy,w*0.25,p.a-1,p.a+1);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ===== MANE / HAIR ===== */
+function drawMane(){
+  // Yellow spiky mane along top of body
+  ctx.save();
+  for(let i=0;i<20;i++){
+    const p=d[i], n=norm(p.a);
+    const len=12+(20-i)*0.8+Math.sin(t*3+i*.5)*3;
+    const spikeCount=3;
+
+    for(let s=0;s<spikeCount;s++){
+      const offset=(s-1)*0.25;
+      const angle=n+offset;
+      const sx=p.x+Math.cos(angle)*bodyW(i);
+      const sy=p.y+Math.sin(angle)*bodyW(i);
+      const ex=sx+Math.cos(angle+Math.sin(t*2+i+s)*.3)*len;
+      const ey=sy+Math.sin(angle+Math.sin(t*2+i+s)*.3)*len;
+
+      ctx.beginPath();
+      ctx.moveTo(sx,sy);
+      ctx.quadraticCurveTo(
+        (sx+ex)/2+Math.cos(angle+.5)*5,
+        (sy+ey)/2+Math.sin(angle+.5)*5,
+        ex,ey
+      );
+      ctx.strokeStyle=YELLOW;
+      ctx.lineWidth=2.5-s*0.5;
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* ===== TAIL TUFT ===== */
+function drawTailTuft(){
+  ctx.save();
+  const tailStart=SEGS-10;
+  for(let i=tailStart;i<SEGS;i++){
+    const p=d[i];
+    const n=norm(p.a);
+    const progress=(i-tailStart)/10;
+    const len=8+progress*18+Math.sin(t*3+i*.4)*4;
+    const count=4;
+
+    for(let s=0;s<count;s++){
+      const offset=(s/(count-1)-0.5)*1.5;
+      const angle=n+offset+Math.sin(t*2+s)*0.2;
+      const sx=p.x+Math.cos(angle)*bodyW(i)*0.5;
+      const sy=p.y+Math.sin(angle)*bodyW(i)*0.5;
+      const ex=sx+Math.cos(angle)*len;
+      const ey=sy+Math.sin(angle)*len;
+
+      const grad=ctx.createLinearGradient(sx,sy,ex,ey);
+      grad.addColorStop(0,YELLOW);
+      grad.addColorStop(1,"#f5d060");
+
+      ctx.beginPath();
+      ctx.moveTo(sx,sy);
+      ctx.quadraticCurveTo(
+        (sx+ex)/2+Math.cos(p.a)*4,
+        (sy+ey)/2+Math.sin(p.a)*4,
+        ex,ey
+      );
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=2.5-progress;
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* ===== LEGS WITH IK ===== */
+const LEGS=[
+  {seg:10,side:1},{seg:10,side:-1},
+  {seg:16,side:1},{seg:16,side:-1},
+  {seg:26,side:1},{seg:26,side:-1},
+  {seg:34,side:1},{seg:34,side:-1},
+];
+
+const legSt=LEGS.map((_,i)=>({
+  footX:0,footY:0,targetX:0,targetY:0,
+  stepping:false,stepP:1,phase:i%2===0?0:.5,init:false
+}));
+
+function updateLegs(){
+  const sf=clamp(spd/80,.1,1.2);
+  for(let i=0;i<LEGS.length;i++){
+    const def=LEGS[i], leg=legSt[i], p=d[def.seg];
+    const sa=p.a+def.side*Math.PI/2;
+    const hipX=p.x+Math.cos(sa)*bodyW(def.seg)*.6;
+    const hipY=p.y+Math.sin(sa)*bodyW(def.seg)*.6;
+
+    const restLen=50;
+    const strideA=sa+def.side*.35;
+    const idealX=hipX+Math.cos(strideA)*restLen;
+    const idealY=hipY+Math.sin(strideA)*restLen;
+
+    leg.phase+=.02*4.5*sf;
+    const cv=Math.sin(leg.phase);
+    const sl=22*sf;
+    const tX=idealX+Math.cos(p.a)*cv*sl;
+    const tY=idealY+Math.sin(p.a)*cv*sl;
+
+    const fd=Math.hypot(leg.footX-tX,leg.footY-tY);
+    if(fd>25*sf+8||leg.stepP<1){
+      if(!leg.stepping){leg.stepping=true;leg.stepP=0;leg.targetX=tX;leg.targetY=tY}
+    }
+    if(leg.stepping){
+      leg.stepP+=.08+sf*.04;
+      if(leg.stepP>=1){leg.stepP=1;leg.stepping=false}
+      const sp=leg.stepP*leg.stepP*(3-2*leg.stepP);
+      leg.footX=lerp(leg.footX,leg.targetX,sp);
+      leg.footY=lerp(leg.footY,leg.targetY,sp);
+    }else{
+      leg.footX=lerp(leg.footX,tX,.08);
+      leg.footY=lerp(leg.footY,tY,.08);
+    }
+    if(!leg.init){leg.footX=idealX;leg.footY=idealY;leg.init=true}
+  }
+}
+
+function drawLegs(){
+  for(let i=0;i<LEGS.length;i++){
+    const def=LEGS[i], leg=legSt[i], p=d[def.seg];
+    const sa=p.a+def.side*Math.PI/2;
+    const hipX=p.x+Math.cos(sa)*bodyW(def.seg)*.6;
+    const hipY=p.y+Math.sin(sa)*bodyW(def.seg)*.6;
+
+    const uLen=28, lLen=28, total=uLen+lLen;
+
+    let dx=leg.footX-hipX, dy=leg.footY-hipY;
+    let dd=Math.hypot(dx,dy);
+
+    // lift
+    let liftY=0;
+    if(leg.stepping) liftY=-Math.sin(leg.stepP*Math.PI)*16;
+
+    const fx=hipX+dx, fy=hipY+dy+liftY;
+    const dx2=fx-hipX, dy2=fy-hipY;
+    let d2=clamp(Math.hypot(dx2,dy2),2,total-1);
+    const aim=Math.atan2(dy2,dx2);
+
+    let ck=(uLen*uLen+d2*d2-lLen*lLen)/(2*uLen*d2);
+    ck=clamp(ck,-1,1);
+    const ka=Math.acos(ck);
+    const bend=def.side;
+
+    const kneeX=hipX+Math.cos(aim+ka*bend)*uLen;
+    const kneeY=hipY+Math.sin(aim+ka*bend)*uLen;
+
+    // Upper leg
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);
+    ctx.strokeStyle=RED;ctx.lineWidth=7;ctx.lineCap="round";ctx.stroke();
+    ctx.strokeStyle=DARK_RED;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+
+    // Lower leg
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.lineTo(fx,fy);
+    ctx.strokeStyle=RED;ctx.lineWidth=5.5;ctx.lineCap="round";ctx.stroke();
+    ctx.strokeStyle=DARK_RED;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+
+    // Joints
+    ctx.save();
+    ctx.fillStyle=ORANGE;
+    ctx.beginPath();ctx.arc(hipX,hipY,4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(kneeX,kneeY,3.5,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    // Claws
+    const clawA=Math.atan2(fy-kneeY,fx-kneeX);
+    const clawLen=12;
+
+    for(let c=-1;c<=1;c++){
+      const ca=clawA+c*.4;
+      const cx=fx+Math.cos(ca)*clawLen;
+      const cy=fy+Math.sin(ca)*clawLen;
+
+      ctx.save();
+      ctx.beginPath();ctx.moveTo(fx,fy);
+      ctx.quadraticCurveTo(
+        fx+Math.cos(ca)*clawLen*.6,
+        fy+Math.sin(ca)*clawLen*.6-3,
+        cx,cy
+      );
+      ctx.strokeStyle=RED;ctx.lineWidth=3;ctx.lineCap="round";ctx.stroke();
+      ctx.restore();
+
+      // Claw tip
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(ca)*5,cy+Math.sin(ca)*5);
+      ctx.strokeStyle=CREAM;ctx.lineWidth=2;ctx.lineCap="round";ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+/* ===== HEAD ===== */
+function drawHead(){
+  const p=d[0], a=p.a;
+
+  // Head shape
+  ctx.save();
+  const headLen=32, headW=22;
+
+  const nose={x:p.x+Math.cos(a)*headLen,y:p.y+Math.sin(a)*headLen};
+  const topL={x:p.x+Math.cos(a+1.8)*headW,y:p.y+Math.sin(a+1.8)*headW};
+  const topR={x:p.x+Math.cos(a-1.8)*headW,y:p.y+Math.sin(a-1.8)*headW};
+  const jawL={x:p.x+Math.cos(a+2.6)*18,y:p.y+Math.sin(a+2.6)*18};
+  const jawR={x:p.x+Math.cos(a-2.6)*18,y:p.y+Math.sin(a-2.6)*18};
+
+  // Main head fill
+  ctx.beginPath();
+  ctx.moveTo(nose.x,nose.y);
+  ctx.quadraticCurveTo(topL.x,topL.y,jawL.x,jawL.y);
+  ctx.quadraticCurveTo(p.x-Math.cos(a)*8,p.y-Math.sin(a)*8,jawR.x,jawR.y);
+  ctx.quadraticCurveTo(topR.x,topR.y,nose.x,nose.y);
+  ctx.closePath();
+  ctx.fillStyle="#dd3322";
+  ctx.fill();
+  ctx.strokeStyle=DARK_RED;
+  ctx.lineWidth=2;
+  ctx.stroke();
+  ctx.restore();
+
+  // Snout / nose bump
+  ctx.save();
+  const snoutX=p.x+Math.cos(a)*headLen*.85;
+  const snoutY=p.y+Math.sin(a)*headLen*.85;
+  ctx.beginPath();
+  ctx.arc(snoutX,snoutY,7,0,Math.PI*2);
+  ctx.fillStyle="#cc2211";
+  ctx.fill();
+  ctx.strokeStyle=DARK_RED;ctx.lineWidth=1.5;ctx.stroke();
+  ctx.restore();
+
+  // Nostrils
+  ctx.save();
+  const noseL={x:snoutX+Math.cos(a+.6)*4,y:snoutY+Math.sin(a+.6)*4};
+  const noseR={x:snoutX+Math.cos(a-.6)*4,y:snoutY+Math.sin(a-.6)*4};
+  ctx.fillStyle=DARK_RED;
+  ctx.beginPath();ctx.arc(noseL.x,noseL.y,1.5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(noseR.x,noseR.y,1.5,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // Horns
+  ctx.save();
+  for(const side of[1,-1]){
+    const baseX=p.x+Math.cos(a+side*1.4)*14;
+    const baseY=p.y+Math.sin(a+side*1.4)*14;
+    const midX=p.x+Math.cos(a+side*2.0+Math.PI*.15)*28;
+    const midY=p.y+Math.sin(a+side*2.0+Math.PI*.15)*28;
+    const tipX=midX+Math.cos(a+side*2.3+Math.PI*.2)*14;
+    const tipY=midY+Math.sin(a+side*2.3+Math.PI*.2)*14;
+
+    ctx.beginPath();
+    ctx.moveTo(baseX,baseY);
+    ctx.quadraticCurveTo(midX,midY,tipX,tipY);
+    ctx.strokeStyle=BROWN;ctx.lineWidth=5;ctx.lineCap="round";ctx.stroke();
+    ctx.strokeStyle="#8b5e3c";ctx.lineWidth=3;ctx.stroke();
+    ctx.strokeStyle="#c4915a";ctx.lineWidth=1.5;ctx.stroke();
+  }
+  ctx.restore();
+
+  // Eyes
+  ctx.save();
+  for(const side of[1,-1]){
+    const ex=p.x+Math.cos(a+side*.55)*14;
+    const ey=p.y+Math.sin(a+side*.55)*14;
+
+    // Eye white
+    ctx.beginPath();ctx.arc(ex,ey,5,0,Math.PI*2);
+    ctx.fillStyle=WHITE;ctx.fill();
+    ctx.strokeStyle=BLACK;ctx.lineWidth=1;ctx.stroke();
+
+    // Pupil
+    const px=ex+Math.cos(a)*2;
+    const py=ey+Math.sin(a)*2;
+    ctx.beginPath();ctx.arc(px,py,2.5,0,Math.PI*2);
+    ctx.fillStyle=BLACK;ctx.fill();
+
+    // Pupil shine
+    ctx.beginPath();ctx.arc(px-1,py-1,1,0,Math.PI*2);
+    ctx.fillStyle=WHITE;ctx.fill();
+
+    // Eyebrow (angry)
+    ctx.beginPath();
+    const ebx1=ex+Math.cos(a+side*1.2)*7;
+    const eby1=ey+Math.sin(a+side*1.2)*7;
+    const ebx2=ex+Math.cos(a-side*.2)*8;
+    const eby2=ey+Math.sin(a-side*.2)*8;
+    ctx.moveTo(ebx1,eby1);ctx.lineTo(ebx2,eby2);
+    ctx.strokeStyle=DARK_RED;ctx.lineWidth=2.5;ctx.lineCap="round";ctx.stroke();
+  }
+  ctx.restore();
+
+  // Mouth / Teeth
+  ctx.save();
+  const mouthY1=p.x+Math.cos(a+.15)*headLen*.7;
+  const mouthY2=p.y+Math.sin(a+.15)*headLen*.7;
+
+  // Teeth row
+  for(let i=0;i<6;i++){
+    const frac=(i+.5)/6;
+    const tx=lerp(jawL.x,nose.x,frac);
+    const ty=lerp(jawL.y,nose.y,frac);
+    const ta=a-Math.PI/2.5;
+
+    ctx.beginPath();
+    ctx.moveTo(tx,ty);
+    ctx.lineTo(tx+Math.cos(ta)*6,ty+Math.sin(ta)*6);
+    ctx.strokeStyle=CREAM;ctx.lineWidth=2.5;ctx.lineCap="round";ctx.stroke();
+  }
+  ctx.restore();
+
+  // Whiskers (curly)
+  ctx.save();
+  for(const side of[1,-1]){
+    const wx=p.x+Math.cos(a+side*2.7)*16;
+    const wy=p.y+Math.sin(a+side*2.7)*16;
+    const wAngle=a+side*2.9+Math.sin(t*2)*.15;
+
+    const wx2=wx+Math.cos(wAngle)*25;
+    const wy2=wy+Math.sin(wAngle)*25;
+    const wx3=wx2+Math.cos(wAngle+side*.8)*20;
+    const wy3=wy2+Math.sin(wAngle+side*.8)*20;
+
+    ctx.beginPath();
+    ctx.moveTo(wx,wy);
+    ctx.quadraticCurveTo(wx2,wy2,wx3,wy3);
+
+    const grad=ctx.createLinearGradient(wx,wy,wx3,wy3);
+    grad.addColorStop(0,YELLOW);
+    grad.addColorStop(1,"#f0d860");
+    ctx.strokeStyle=grad;ctx.lineWidth=2.5;ctx.lineCap="round";ctx.stroke();
+
+    // Whisker curl at end
+    const wx4=wx3+Math.cos(wAngle+side*1.5)*10;
+    const wy4=wy3+Math.sin(wAngle+side*1.5)*10;
+    ctx.beginPath();ctx.moveTo(wx3,wy3);
+    ctx.quadraticCurveTo(wx3+Math.cos(wAngle+side*1.2)*6,wy3+Math.sin(wAngle+side*1.2)*6,wx4,wy4);
+    ctx.strokeStyle="#e8c840";ctx.lineWidth=1.5;ctx.stroke();
+  }
+  ctx.restore();
+
+  // Beard / chin hair
+  ctx.save();
+  const chinX=p.x+Math.cos(a+Math.PI*.08)*headLen*.5;
+  const chinY=p.y+Math.sin(a+Math.PI*.08)*headLen*.5;
+  for(let i=0;i<5;i++){
+    const ba=a-Math.PI/2+(i-2)*.2+Math.sin(t*2+i)*.1;
+    const bl=10+i*2;
+    ctx.beginPath();
+    ctx.moveTo(chinX,chinY);
+    const bex=chinX+Math.cos(ba)*bl;
+    const bey=chinY+Math.sin(ba)*bl;
+    ctx.quadraticCurveTo(chinX+Math.cos(ba)*bl*.5,chinY+Math.sin(ba)*bl*.5+3,bex,bey);
+    ctx.strokeStyle=YELLOW;ctx.lineWidth=1.8;ctx.lineCap="round";ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ===== FIRE PARTICLES ===== */
+function drawFires(){
+  for(let i=fires.length-1;i>=0;i--){
+    const f=fires[i];
+    f.x+=f.vx;f.y+=f.vy;f.vy+=.1;f.life-=.02;f.r*=.98;
+
+    ctx.save();
+    ctx.globalAlpha=f.life;
+    ctx.fillStyle=f.color;
+    ctx.shadowColor=f.color;
+    ctx.shadowBlur=12;
+    ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    if(f.life<=0)fires.splice(i,1);
+  }
+}
+
+/* ===== MAIN LOOP ===== */
+function animate(){
+  ctx.clearRect(0,0,W,H);
+
+  update();
+  updateLegs();
+
+  // Draw order matters
+  drawTailTuft();
+  drawLegs();
+  drawBody();
+  drawScales();
+  drawMane();
+  drawHead();
+  drawFires();
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
