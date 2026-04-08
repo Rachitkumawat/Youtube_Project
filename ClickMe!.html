@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial;
+    }
+    #btn {
+        padding: 20px 40px;
+        font-size: 18px;
+        position: absolute;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+    <button id="btn">Click Me!</button>
+    
+<script>
+    const btn = document.getElementById('btn');
+    
+    btn.addEventListener('mouseenter', () => {
+        const maxX = window.innerWidth - btn.offsetWidth;
+        const maxY = window.innerHeight - btn.offsetHeight;
+        
+        const randomX = Math.floor(Math.random() * maxX);
+        const randomY = Math.floor(Math.random() * maxY);
+        
+        btn.style.left = randomX + 'px';
+        btn.style.top = randomY + 'px';
+    });
+</script>
+</body>
+</html>
