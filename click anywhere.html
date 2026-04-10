@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: Arial;
+    }
+    canvas {
+        display: block;
+        cursor: pointer;
+    }
+    .info {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        font-size: 18px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+</style>
+</head>
+<body>
+    <div class="info">Click anywhere to create bouncing balls!</div>
+    <canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const balls = [];
+    const gravity = 0.5;
+    const friction = 0.99;
+    
+    class Ball {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.radius = Math.random() * 20 + 10;
+            this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            this.dx = (Math.random() - 0.5) * 10;
+            this.dy = (Math.random() - 0.5) * 10;
+        }
+        
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();
+        }
+        
+        update() {
+            // Gravity
+            this.dy += gravity;
+            
+            // Friction
+            this.dx *= friction;
+            this.dy *= friction;
+            
+            // Position
+            this.x += this.dx;
+            this.y += this.dy;
+            
+            // Bounce off walls
+            if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                this.dx = -this.dx;
+                this.x = this.x + this.radius > canvas.width ? 
+                         canvas.width - this.radius : this.radius;
+            }
+            
+            if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                this.dy = -this.dy * 0.8;
+                this.y = this.y + this.radius > canvas.height ? 
+                         canvas.height - this.radius : this.radius;
+            }
+            
+            this.draw();
+        }
+    }
+    
+    canvas.addEventListener('click', (e) => {
+        for (let i = 0; i < 5; i++) {
+            balls.push(new Ball(e.clientX, e.clientY));
+        }
+    });
+    
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        balls.forEach((ball, index) => {
+            ball.update();
+            
+            // Remove slow balls
+            if (Math.abs(ball.dx) < 0.1 && Math.abs(ball.dy) < 0.1) {
+                balls.splice(index, 1);
+            }
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+    
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+</script>
+</body>
+</html>
