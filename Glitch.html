@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #000;
+        margin: 0;
+    }
+    .glitch {
+        font-size: 80px;
+        font-weight: bold;
+        color: #fff;
+        position: relative;
+    }
+    .glitch::before,
+    .glitch::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .glitch::before {
+        animation: glitch 0.3s infinite;
+        color: #0ff;
+        z-index: -1;
+    }
+    .glitch::after {
+        animation: glitch 0.3s reverse infinite;
+        color: #f0f;
+        z-index: -2;
+    }
+    @keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+    }
+</style>
+</head>
+<body>
+    <div class="glitch" data-text="CodewithRachit">CodewithRachit</div>
+</body>
+</html>
