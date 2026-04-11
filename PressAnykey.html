@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial;
+        transition: background 1s;
+    }
+    h1 {
+        color: white;
+        font-size: 60px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+</style>
+</head>
+<body>
+    <h1>Press Any Key</h1>
+    
+<script>
+    function randomColor() {
+        return '#' + Math.floor(Math.random()*16777215).toString(16);
+    }   
+    document.addEventListener('keypress', () => {
+        document.body.style.background = randomColor();
+    });
+    // Auto change every 3 seconds
+    setInterval(() => {
+        document.body.style.background = randomColor();
+    }, 3000);
+</script>
+</body>
+</html>
