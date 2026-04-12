@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+        background: #222;
+        font-family: 'Courier New', monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .container {
+        text-align: center;
+    }
+    
+    h1 {
+        color: #fff;
+        font-size: 48px;
+        margin-bottom: 50px;
+        text-shadow: 0 0 20px #ff00ff;
+    }
+    
+    .keys {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .key {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(145deg, #333, #555);
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        transition: all 0.1s;
+        cursor: pointer;
+    }
+    
+    .key:active,
+    .key.active {
+        transform: scale(0.95);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        background: linear-gradient(145deg, #ff00ff, #00ffff);
+    }
+    
+    .key span {
+        font-size: 12px;
+        margin-top: 10px;
+        opacity: 0.7;
+    }
+    
+    .ripple {
+        position: fixed;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.8), transparent);
+        pointer-events: none;
+        animation: ripple 1s ease-out forwards;
+    }
+    
+    @keyframes ripple {
+        from {
+            width: 0;
+            height: 0;
+            opacity: 1;
+        }
+        to {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥁 Keyboard Drummer 🥁</h1>
+        <div class="keys">
+            <div class="key" data-key="a" data-sound="kick">
+                A<span>Kick</span>
+            </div>
+            <div class="key" data-key="s" data-sound="snare">
+                S<span>Snare</span>
+            </div>
+            <div class="key" data-key="d" data-sound="hihat">
+                D<span>Hi-Hat</span>
+            </div>
+            <div class="key" data-key="f" data-sound="tom">
+                F<span>Tom</span>
+            </div>
+            <div class="key" data-key="g" data-sound="crash">
+                G<span>Crash</span>
+            </div>
+            <div class="key" data-key="h" data-sound="ride">
+                H<span>Ride</span>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Sound frequencies for different drum sounds
+    const sounds = {
+        kick: { freq: 60, type: 'sine', duration: 0.5 },
+        snare: { freq: 200, type: 'triangle', duration: 0.2 },
+        hihat: { freq: 800, type: 'square', duration: 0.1 },
+        tom: { freq: 150, type: 'sine', duration: 0.3 },
+        crash: { freq: 1000, type: 'sawtooth', duration: 0.5 },
+        ride: { freq: 600, type: 'square', duration: 0.3 }
+    };
+    
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(soundType) {
+        const sound = sounds[soundType];
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = sound.freq;
+        oscillator.type = sound.type;
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + sound.duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + sound.duration);
+    }
+    
+    function createRipple(x, y, color) {
+        const ripple = document.createElement('div');
+        ripple.className = 'ripple';
+        ripple.style.left = (x - 150) + 'px';
+        ripple.style.top = (y - 150) + 'px';
+        ripple.style.background = `radial-gradient(circle, ${color}, transparent)`;
+        document.body.appendChild(ripple);
+        
+        setTimeout(() => ripple.remove(), 1000);
+    }
+    
+    function activateKey(key) {
+        const keyElement = document.querySelector(`.key[data-key="${key}"]`);
+        if (!keyElement) return;
+        
+        const soundType = keyElement.dataset.sound;
+        const rect = keyElement.getBoundingClientRect();
+        const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        
+        keyElement.classList.add('active');
+        playSound(soundType);
+        createRipple(rect.left + rect.width / 2, rect.top + rect.height / 2, color);
+        
+        setTimeout(() => keyElement.classList.remove('active'), 100);
+    }
+    
+    // Keyboard events
+    document.addEventListener('keydown', (e) => {
+        activateKey(e.key.toLowerCase());
+    });
+    
+    // Mouse clicks
+    document.querySelectorAll('.key').forEach(key => {
+        key.addEventListener('click', () => {
+            activateKey(key.dataset.key);
+        });
+    });
+</script>
+</body>
+</html>
