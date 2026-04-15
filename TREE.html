@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Animated Fractal Tree</title>
+
+<style>
+body{
+    margin:0;
+    background:#111;
+    overflow:hidden;
+}
+canvas{
+    display:block;
+}
+</style>
+
+<!-- p5.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+
+<body>
+
+<script>
+
+let maxDepth = 10;    
+let baseLength = 140; 
+
+function setup() {
+    createCanvas(window.innerWidth, window.innerHeight);
+    angleMode(RADIANS);
+}
+
+function draw() {
+    background(15);
+
+    translate(width/2, height); 
+
+    let animatedAngle =
+        map(sin(millis()*0.001), -1, 1, PI/6, PI/3);
+
+    drawBranch(baseLength, 0, animatedAngle);
+}
+
+function drawBranch(len, depth, angle){
+
+    if(depth > maxDepth) return;
+
+    let thickness = map(depth, 0, maxDepth, 12, 1);
+    strokeWeight(thickness);
+
+    let r = lerp(120, 40, depth/maxDepth);
+    let g = lerp(70, 200, depth/maxDepth);
+    let b = lerp(20, 80, depth/maxDepth);
+
+    stroke(r,g,b);
+    line(0,0,0,-len);
+    translate(0,-len);
+    let newLen = len * 0.7;
+
+    push();
+    rotate(angle);
+    drawBranch(newLen, depth+1, angle);
+    pop();
+
+    push();
+    rotate(-angle);
+    drawBranch(newLen, depth+1, angle);
+    pop();
+}
+
+function windowResized(){
+    resizeCanvas(window.innerWidth, window.innerHeight);
+}
+
+</script>
+
+</body>
+</html>
