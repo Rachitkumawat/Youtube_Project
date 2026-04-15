@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Play / Pause</title>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      background:#f3f3f3;
+    }
+
+    .box{
+      width:520px;
+      height:260px;
+      background:#fff;
+      border:2px solid #cfcfcf;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* CAR */
+    #car{
+      position:absolute;
+      top:35px;          
+      left: 0;                 
+      width:180px;             
+      height:auto;
+      user-select:none;
+      pointer-events:none;
+
+      animation: drive 6s linear infinite;
+      animation-play-state: paused;  
+      will-change: transform;
+    }
+
+    /* JS --driveDistance set karega */
+    @keyframes drive{
+      from { transform: translateX(0); }
+      to   { transform: translateX(var(--driveDistance, 700px)); }
+    }
+
+    .controls{
+      position:absolute;
+      left:50%;
+      bottom:35px;
+      transform:translateX(-50%);
+      display:flex;
+      gap:14px;
+    }
+
+    button{
+      padding:6px 14px;
+      border:1px solid #888;
+      background:#eaeaea;
+      cursor:pointer;
+    }
+    button:active{ transform: translateY(1px); }
+  </style>
+</head>
+<body>
+
+  <div class="box" id="stage">
+    <img id="car" src="car1.png" alt="car" />
+
+    <div class="controls">
+      <button id="playBtn">play</button>
+      <button id="pauseBtn">pause</button>
+    </div>
+  </div>
+
+  <script>
+    const stage = document.getElementById("stage");
+    const car = document.getElementById("car");
+
+    const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+
+    function setDriveDistance(){
+      const stageW = stage.clientWidth;
+      const carW = car.getBoundingClientRect().width;
+
+      car.style.left = (-carW) + "px";
+
+      const distance = stageW + (2 * carW);
+      stage.style.setProperty("--driveDistance", distance + "px");
+    }
+
+    car.addEventListener("load", setDriveDistance);
+    window.addEventListener("resize", setDriveDistance);
+
+    playBtn.addEventListener("click", () => {
+      car.style.animationPlayState = "running";
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      car.style.animationPlayState = "paused";
+    });
+  </script>
+
+</body>
+</html>
