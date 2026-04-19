@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slider</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .slider-container {
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .slider-wrapper {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 40px;
+        }
+
+        .slide-content h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            animation: slideUp 0.8s ease;
+        }
+
+        .slide-content p {
+            font-size: 1.2em;
+            animation: slideUp 1s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: none;
+            font-size: 2em;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .nav-button:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .prev {
+            left: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .next {
+            right: 20px;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .dots-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.1s linear;
+            z-index: 11;
+        }
+
+        .controls {
+            background: #2a2a2a;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #5568d3;
+        }
+
+        .control-btn.active {
+            background: #4a5ab8;
+        }
+    </style>
+</head>
+<body>
+    <div class="slider-container">
+        <div class="slider-wrapper">
+            <div class="slide active">
+                <img src="images/photo1.jpg" class="slide-image" alt="Slide 1">
+                <div class="slide-content">
+                    <h2>Welcome to Our Slider</h2>
+                    <p>Beautiful and responsive image carousel</p>
+                </div>
+            </div>
+            <div class="slide">
+                <img src="images/photo2.jpg" class="slide-image" alt="Slide 1">
+                <div class="slide-content">
+                    <h2>Smooth Transitions</h2>
+                    <p>Experience seamless slide animations</p>
+                </div>
+            </div>
+            <div class="slide">
+                <img src="images/photo3.jpg" class="slide-image" alt="Slide 1">
+                <div class="slide-content">
+                    <h2>Auto Play Feature</h2>
+                    <p>Slides change automatically every 5 seconds</p>
+                </div>
+            </div>
+            <div class="slide">
+                <img src="images/photo4.jpg" class="slide-image" alt="Slide 1">
+                <div class="slide-content">
+                    <h2>Fully Responsive</h2>
+                    <p>Works perfectly on all devices</p>
+                </div>
+            </div>
+            <div class="slide">
+               <img src="images/photo5.jpg" class="slide-image" alt="Slide 1">
+                <div class="slide-content">
+                    <h2>Easy to Customize</h2>
+                    <p>Simple and clean code structure</p>
+                </div>
+            </div>
+
+            <button class="nav-button prev" onclick="changeSlide(-1)">❮</button>
+            <button class="nav-button next" onclick="changeSlide(1)">❯</button>
+
+            <div class="dots-container" id="dotsContainer"></div>
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="playPauseBtn" onclick="toggleAutoPlay()">⏸ Pause</button>
+            <button class="control-btn" onclick="resetSlider()">↻ Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let autoPlayInterval;
+        let progressInterval;
+        let isPlaying = true;
+        const slides = document.querySelectorAll('.slide');
+        const dotsContainer = document.getElementById('dotsContainer');
+        const progressBar = document.getElementById('progressBar');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const autoPlayDuration = 5000; // 5 seconds
+
+        // Create dots
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.dot');
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+
+            if (n >= slides.length) currentSlide = 0;
+            if (n < 0) currentSlide = slides.length - 1;
+
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+
+            resetProgress();
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            showSlide(currentSlide);
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            showSlide(currentSlide);
+        }
+
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(nextSlide, autoPlayDuration);
+            startProgress();
+        }
+
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+            clearInterval(progressInterval);
+            progressBar.style.width = '0%';
+        }
+
+        function toggleAutoPlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                startAutoPlay();
+                playPauseBtn.innerHTML = '⏸ Pause';
+            } else {
+                stopAutoPlay();
+                playPauseBtn.innerHTML = '▶ Play';
+            }
+        }
+
+        function resetSlider() {
+            currentSlide = 0;
+            showSlide(currentSlide);
+        }
+
+        function startProgress() {
+            let width = 0;
+            progressInterval = setInterval(() => {
+                width += 100 / (autoPlayDuration / 100);
+                progressBar.style.width = width + '%';
+                if (width >= 100) {
+                    width = 0;
+                }
+            }, 100);
+        }
+
+        function resetProgress() {
+            clearInterval(progressInterval);
+            progressBar.style.width = '0%';
+            if (isPlaying) {
+                startProgress();
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Touch/Swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.querySelector('.slider-wrapper').addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.querySelector('.slider-wrapper').addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) changeSlide(1);
+            if (touchEndX > touchStartX + 50) changeSlide(-1);
+        }
+        startAutoPlay();
+    </script>
+</body>
+</html>
