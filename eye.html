@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background: #1a1a2e;
+        overflow: hidden;
+        cursor: none;
+    }
+    
+    .eye {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    .pupil {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #000;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .custom-cursor {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #ff6b6b;
+        pointer-events: none;
+        z-index: 10000;
+        box-shadow: 0 0 20px #ff6b6b;
+        transition: transform 0.1s;
+    }
+</style>
+</head>
+<body>
+    <div class="custom-cursor" id="cursor"></div>
+
+<script>
+    const cursor = document.getElementById('cursor');
+    const eyes = [];
+    let mouseX = 0;
+    let mouseY = 0;
+    
+    // Create eyes
+    for (let i = 0; i < 20; i++) {
+        const eye = document.createElement('div');
+        eye.className = 'eye';
+        eye.style.left = Math.random() * window.innerWidth + 'px';
+        eye.style.top = Math.random() * window.innerHeight + 'px';
+        
+        const pupil = document.createElement('div');
+        pupil.className = 'pupil';
+        eye.appendChild(pupil);
+        
+        document.body.appendChild(eye);
+        eyes.push({ element: eye, pupil: pupil });
+    }
+    
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        cursor.style.left = mouseX - 10 + 'px';
+        cursor.style.top = mouseY - 10 + 'px';
+        
+        eyes.forEach(eye => {
+            const rect = eye.element.getBoundingClientRect();
+            const eyeX = rect.left + rect.width / 2;
+            const eyeY = rect.top + rect.height / 2;
+            
+            const angle = Math.atan2(mouseY - eyeY, mouseX - eyeX);
+            const distance = Math.min(15, Math.hypot(mouseX - eyeX, mouseY - eyeY) / 20);
+            
+            const pupilX = Math.cos(angle) * distance;
+            const pupilY = Math.sin(angle) * distance;
+            
+            eye.pupil.style.transform = `translate(calc(-50% + ${pupilX}px), calc(-50% + ${pupilY}px))`;
+        });
+    });
+    
+    document.addEventListener('click', () => {
+        cursor.style.transform = 'scale(1.5)';
+        setTimeout(() => {
+            cursor.style.transform = 'scale(1)';
+        }, 100);
+        
+        // Blink all eyes
+        eyes.forEach(eye => {
+            eye.element.style.transform = 'scaleY(0.1)';
+            setTimeout(() => {
+                eye.element.style.transform = 'scaleY(1)';
+            }, 100);
+        });
+    });
+</script>
+</body>
+</html>
