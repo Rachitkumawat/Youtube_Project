@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epic Loading Animations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0f0f0f;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 50px;
+            padding: 50px;
+            place-items: center;
+        }
+
+        .loader-container {
+            width: 250px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #1a1a1a;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .loader-container::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #ff0080);
+            animation: borderRotate 4s linear infinite;
+            background-size: 400%;
+        }
+
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); background-position: 0 0; }
+            100% { transform: rotate(360deg); background-position: 400% 0; }
+        }
+
+        .loader-container::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            background: #1a1a1a;
+            border-radius: 18px;
+        }
+
+        /* Loader 1: Spinning Circles */
+        .loader-1 {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loader-1 span {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+        }
+
+        .loader-1 span:nth-child(1) {
+            border-top-color: #ff0080;
+            animation: spin1 1.5s linear infinite;
+        }
+
+        .loader-1 span:nth-child(2) {
+            border-right-color: #00ff88;
+            animation: spin1 1.5s linear infinite;
+            animation-delay: 0.5s;
+        }
+
+        .loader-1 span:nth-child(3) {
+            border-bottom-color: #00d4ff;
+            animation: spin1 1.5s linear infinite;
+            animation-delay: 1s;
+        }
+
+        @keyframes spin1 {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Loader 2: Pulse Dots */
+        .loader-2 {
+            display: flex;
+            gap: 15px;
+            z-index: 1;
+        }
+
+        .loader-2 span {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #ff0080, #ff8c00);
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        .loader-2 span:nth-child(1) { animation-delay: 0s; }
+        .loader-2 span:nth-child(2) { animation-delay: 0.2s; }
+        .loader-2 span:nth-child(3) { animation-delay: 0.4s; }
+        .loader-2 span:nth-child(4) { animation-delay: 0.6s; }
+        .loader-2 span:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(0.5);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 1;
+            }
+        }
+
+        /* Loader 3: Neon Square */
+        .loader-3 {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loader-3 span {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            animation: neonSquare 2s ease-in-out infinite;
+        }
+
+        .loader-3 span:nth-child(1) {
+            border-top-color: #ff0080;
+            border-right-color: #ff0080;
+            animation-delay: 0s;
+        }
+
+        .loader-3 span:nth-child(2) {
+            border-bottom-color: #00ff88;
+            border-left-color: #00ff88;
+            animation-delay: 1s;
+        }
+
+        @keyframes neonSquare {
+            0% {
+                transform: rotate(0deg) scale(1);
+                box-shadow: 0 0 20px currentColor;
+            }
+            50% {
+                transform: rotate(180deg) scale(1.3);
+                box-shadow: 0 0 40px currentColor;
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+                box-shadow: 0 0 20px currentColor;
+            }
+        }
+
+        /* Loader 4: Wave */
+        .loader-4 {
+            display: flex;
+            gap: 8px;
+            z-index: 1;
+        }
+
+        .loader-4 span {
+            width: 12px;
+            height: 60px;
+            background: linear-gradient(180deg, #ff0080, #40e0d0);
+            border-radius: 10px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .loader-4 span:nth-child(1) { animation-delay: 0s; }
+        .loader-4 span:nth-child(2) { animation-delay: 0.1s; }
+        .loader-4 span:nth-child(3) { animation-delay: 0.2s; }
+        .loader-4 span:nth-child(4) { animation-delay: 0.3s; }
+        .loader-4 span:nth-child(5) { animation-delay: 0.4s; }
+        .loader-4 span:nth-child(6) { animation-delay: 0.5s; }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: scaleY(0.5);
+            }
+            50% {
+                transform: scaleY(1.5);
+            }
+        }
+
+        /* Loader 5: Infinity */
+        .loader-5 {
+            width: 120px;
+            height: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loader-5 span {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #ff0080, #ff8c00);
+            border-radius: 50%;
+            box-shadow: 0 0 30px currentColor;
+        }
+
+        .loader-5 span:nth-child(1) {
+            animation: infinity1 2s ease-in-out infinite;
+        }
+
+        .loader-5 span:nth-child(2) {
+            animation: infinity2 2s ease-in-out infinite;
+        }
+
+        @keyframes infinity1 {
+            0%, 100% {
+                left: 0;
+                top: 0;
+            }
+            25% {
+                left: 45px;
+                top: 0;
+            }
+            50% {
+                left: 90px;
+                top: 0;
+            }
+            75% {
+                left: 45px;
+                top: 30px;
+            }
+        }
+
+        @keyframes infinity2 {
+            0%, 100% {
+                left: 90px;
+                top: 0;
+            }
+            25% {
+                left: 45px;
+                top: 0;
+            }
+            50% {
+                left: 0;
+                top: 0;
+            }
+            75% {
+                left: 45px;
+                top: 30px;
+            }
+        }
+
+        /* Loader 6: Hexagon Spinner */
+        .loader-6 {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loader-6 span {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, #40e0d0);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            animation: hexagonSpin 2s linear infinite;
+        }
+
+        @keyframes hexagonSpin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        .title {
+            position: absolute;
+            bottom: 15px;
+            color: #fff;
+            font-family: Arial;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader 1 -->
+    <div class="loader-container">
+        <div class="loader-1">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SPINNER</div>
+    </div>
+
+    <!-- Loader 2 -->
+    <div class="loader-container">
+        <div class="loader-2">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">PULSE</div>
+    </div>
+
+    <!-- Loader 3 -->
+    <div class="loader-container">
+        <div class="loader-3">
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">NEON</div>
+    </div>
+
+    <!-- Loader 4 -->
+    <div class="loader-container">
+        <div class="loader-4">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">WAVE</div>
+    </div>
+
+    <!-- Loader 5 -->
+    <div class="loader-container">
+        <div class="loader-5">
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">INFINITY</div>
+    </div>
+
+    <!-- Loader 6 -->
+    <div class="loader-container">
+        <div class="loader-6">
+            <span></span>
+        </div>
+        <div class="title">HEXAGON</div>
+    </div>
+</body>
+</html>
