@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Double Pendulum</title>
+
+<style>
+    body{
+        margin:0;
+        background:#0b0f18;
+        overflow:hidden;
+    }
+
+    canvas{
+        display:block;
+    }
+</style>
+</head>
+
+<body>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+const originX = canvas.width/2;
+const originY = canvas.height/4;
+
+/* ---------- Physics Parameters ---------- */
+
+const g = 1;          // gravity
+const m1 = 20;
+const m2 = 20;
+
+const l1 = 200;
+const l2 = 200;
+
+let a1 = Math.PI/2;
+let a2 = Math.PI/2 - 0.01;
+
+let a1_v = 0;
+let a2_v = 0;
+
+/* ---------- Trail ---------- */
+
+let trail = [];
+
+/* ---------- Animation ---------- */
+
+function animate(){
+
+    requestAnimationFrame(animate);
+
+    // fade background (trail effect)
+    ctx.fillStyle = "rgba(11,15,24,0.08)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    /* ---------- Equations of Motion ---------- */
+
+    const num1 = -g*(2*m1+m2)*Math.sin(a1);
+    const num2 = -m2*g*Math.sin(a1-2*a2);
+    const num3 = -2*Math.sin(a1-a2)*m2;
+    const num4 = a2_v*a2_v*l2 + a1_v*a1_v*l1*Math.cos(a1-a2);
+    const den = l1*(2*m1+m2-m2*Math.cos(2*a1-2*a2));
+    const a1_a = (num1+num2+num3*num4)/den;
+
+    const num5 = 2*Math.sin(a1-a2);
+    const num6 = a1_v*a1_v*l1*(m1+m2);
+    const num7 = g*(m1+m2)*Math.cos(a1);
+    const num8 = a2_v*a2_v*l2*m2*Math.cos(a1-a2);
+    const den2 = l2*(2*m1+m2-m2*Math.cos(2*a1-2*a2));
+    const a2_a = (num5*(num6+num7+num8))/den2;
+
+    /* ---------- Integrate ---------- */
+
+    a1_v += a1_a;
+    a2_v += a2_a;
+
+    a1 += a1_v;
+    a2 += a2_v;
+
+    // small damping (stability)
+    a1_v *= 0.999;
+    a2_v *= 0.999;
+
+    /* ---------- Positions ---------- */
+
+    const x1 = originX + l1*Math.sin(a1);
+    const y1 = originY + l1*Math.cos(a1);
+
+    const x2 = x1 + l2*Math.sin(a2);
+    const y2 = y1 + l2*Math.cos(a2);
+
+    /* ---------- Save Trail ---------- */
+
+    trail.push({x:x2, y:y2});
+    if(trail.length > 400) trail.shift();
+
+    /* ---------- Draw Trail ---------- */
+
+    ctx.beginPath();
+    for(let i=0;i<trail.length-1;i++){
+        const p1 = trail[i];
+        const p2 = trail[i+1];
+
+        ctx.strokeStyle = `rgba(0,200,255,${i/trail.length})`;
+        ctx.lineWidth = 2;
+
+        ctx.moveTo(p1.x,p1.y);
+        ctx.lineTo(p2.x,p2.y);
+    }
+    ctx.stroke();
+
+    /* ---------- Draw Pendulum ---------- */
+
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(originX,originY);
+    ctx.lineTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+
+    // first bob
+    ctx.beginPath();
+    ctx.arc(x1,y1,10,0,Math.PI*2);
+    ctx.fillStyle="#ffffff";
+    ctx.fill();
+
+    // second bob
+    ctx.beginPath();
+    ctx.arc(x2,y2,10,0,Math.PI*2);
+    ctx.fillStyle="#00c8ff";
+    ctx.fill();
+}
+
+animate();
+</script>
+</body>
+</html>
