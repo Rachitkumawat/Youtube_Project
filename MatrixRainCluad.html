@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Rain Cloud PRO</title>
+
+<style>
+    *{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:consolas;
+}
+
+body{
+    height:100vh;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+}
+
+/* CONTAINER */
+
+.container{
+    position:relative;
+    width:100%;
+    height:100vh;
+    --clr:#00ff9f;
+    animation:hue 6s linear infinite;
+}
+
+/* COLOR SHIFT */
+@keyframes hue{
+    0%{filter:hue-rotate(0deg);}
+    100%{filter:hue-rotate(360deg);}
+}
+
+/* CLOUD */
+
+.cloud{
+    position:absolute;
+    top:120px;
+    left:50%;
+    transform:translateX(-50%);
+    width:350px;
+    height:120px;
+    background:var(--clr);
+    border-radius:100px;
+    filter:drop-shadow(0 0 40px var(--clr));
+}
+
+.cloud::before{
+    content:'';
+    position:absolute;
+    top:-60px;
+    left:40px;
+    width:130px;
+    height:130px;
+    background:var(--clr);
+    border-radius:50%;
+}
+
+.cloud::after{
+    content:'';
+    position:absolute;
+    top:-45px;
+    right:45px;
+    width:110px;
+    height:110px;
+    background:var(--clr);
+    border-radius:50%;
+}
+
+.cloud h2{
+    position:absolute;
+    left:50%;
+    top:40px;
+    transform:translateX(-50%);
+    color:#000;
+    letter-spacing:4px;
+}
+
+/* MATRIX DROPS */
+
+.drop{
+    position:absolute;
+    top:0;
+    color:#0f0;
+    text-shadow:
+        0 0 5px #0f0,
+        0 0 15px #0f0,
+        0 0 30px #0f0;
+    animation:rain linear forwards;
+    pointer-events:none;
+}
+
+.ground{
+    position: absolute;
+    bottom: 120px;
+    width: 100%;
+    height: 10px;
+    /* invisible */
+    background: transparent;
+}
+/* FALL ANIMATION */
+
+@keyframes rain{
+    0%{
+        transform:translateY(0);
+        opacity:1;
+    }
+    100%{
+        transform:translateY(900px);
+        opacity:0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="cloud">
+        <h2></h2>
+    <div class="ground"></div>
+    </div>
+</div>
+
+<script>
+    const symbols =
+"!@#$%^&*(){}[]<>/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function randomSymbol(){
+    return symbols[Math.floor(Math.random()*symbols.length)];
+}
+
+
+function createRain(){
+
+    const container = document.querySelector('.container');
+    const cloud = document.querySelector('.cloud');
+
+    if(!container || !cloud) return;
+
+    const drop = document.createElement('div');
+    drop.classList.add('drop');
+
+    drop.innerText = randomSymbol();
+
+    /* ===== PERFECT CENTER POSITION ===== */
+
+    const cloudRect = cloud.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    // random position INSIDE cloud width
+    const x = Math.random() * cloudRect.width;
+
+    // convert viewport position → container position
+    const left = cloudRect.left - containerRect.left + x;
+    const top = cloudRect.bottom - containerRect.top;
+
+    /* ==================================== */
+
+    const size = Math.random()*1.5;
+    const duration = 2 + Math.random()*2;
+
+    drop.style.left = left + "px";
+    drop.style.top = top + "px";
+    drop.style.fontSize = (0.8 + size) + "em";
+    drop.style.animationDuration = duration + "s";
+
+    container.appendChild(drop);
+
+    setTimeout(()=>{
+        drop.remove();
+    },4000);
+}
+
+/* Smooth Rain */
+setInterval(createRain,20);
+</script>
+
+</body>
+</html>
