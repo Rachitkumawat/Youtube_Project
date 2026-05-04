@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Animated Match Stick | @CodewithRachit</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #0d0d0f;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  touch-action: none;
+  /* prevent scrolling */
+}
+
+/* Background glow when lit using pseudo-element for smooth transition */
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 40%, #4a2511 0%, #0d0d0f 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body.lit::before {
+  opacity: 1;
+}
+
+body.lit {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+#instruction {
+  position: absolute;
+  top: 15%;
+  font-size: 1.2rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  user-select: none;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+body.lit #instruction {
+  opacity: 0;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* The Match container */
+.match {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 100px;
+  cursor: crosshair;
+  z-index: 10;
+}
+
+/* Match Head */
+.match-head {
+  width: 32px;
+  height: 48px;
+  background: linear-gradient(135deg, #a31515, #5e0b0b);
+  border-radius: 40% 40% 30% 30%;
+  margin-bottom: -10px;
+  z-index: 2;
+  box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.4), inset 3px 3px 6px rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease;
+}
+
+/* Burnt Match Head */
+body.lit .match-head,
+body.extinguished .match-head {
+  background: linear-gradient(135deg, #111, #000);
+  box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.8), inset 2px 2px 4px rgba(255, 255, 255, 0.05);
+}
+
+/* Match Stick */
+.match-stick {
+  width: 18px;
+  height: 250px;
+  background: linear-gradient(90deg, #d2a679, #e6c299 30%, #b88654 80%, #8c6239);
+  border-radius: 2px 2px 8px 8px;
+  z-index: 1;
+  box-shadow: inset -2px 0 5px rgba(0, 0, 0, 0.2), 5px 5px 15px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Burnt effect on the stick moving down */
+.match-stick::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to bottom, #111 0%, #333 70%, transparent 100%);
+  transition: height 0s;
+  /* instant reset */
+}
+
+body.lit .match-stick::after {
+  height: 60%;
+  transition: height 15s linear;
+  /* burns down over 15 seconds */
+}
+
+/* Keep the burnt height when extinguished until it fully resets */
+body.extinguished .match-stick::after {
+  height: 60%;
+  transition: none;
+  /* stays burnt during smoke */
+}
+
+/* Flame Container */
+.flame-container {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 150px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.2s ease, transform 0s;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+body.lit .flame-container {
+  opacity: 1;
+  transform: translateX(-50%) translateY(140px);
+  /* flame moves down as match burns */
+  transition: opacity 0.2s ease, transform 15s linear;
+}
+
+/* Flame Shape and Animation */
+.flame {
+  width: 60px;
+  height: 120px;
+  background: radial-gradient(ellipse at bottom, #fff 5%, #ffeb99 20%, #ff9900 50%, #ff3300 80%, transparent 100%);
+  border-radius: 50% 50% 20% 20%;
+  box-shadow: 0 -10px 40px #ff3300, 0 0 80px #ff9900;
+  animation: flicker 0.1s infinite alternate, sway 3s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+  filter: blur(2px);
+}
+
+@keyframes flicker {
+  0% {
+    transform: scaleX(0.98) scaleY(1.02);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scaleX(1.02) scaleY(0.98);
+    opacity: 1;
+  }
+}
+
+@keyframes sway {
+  0% {
+    transform: rotate(-5deg);
+  }
+
+  100% {
+    transform: rotate(5deg);
+  }
+}
+
+/* Initial Spark Animation */
+.sparkles {
+  position: absolute;
+  bottom: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+body.lit .sparkles {
+  animation: explode 0.5s ease-out forwards;
+}
+
+@keyframes explode {
+  0% {
+    box-shadow: 0 0 0 #fff, 0 0 0 #ff9900, 0 0 0 #ff3300;
+  }
+
+  50% {
+    box-shadow: -20px -30px 10px #ff9900, 30px -40px 15px #ff3300, -10px -60px 5px #fff;
+  }
+
+  100% {
+    box-shadow: -40px -60px 20px transparent, 50px -80px 30px transparent, -20px -100px 10px transparent;
+  }
+}
+
+/* --- Smoke Animations --- */
+#smoke-container {
+  position: absolute;
+  top: 60px;
+  /* starts a bit below the flame tip */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.smoke {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, rgba(180, 180, 180, 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(5px);
+  opacity: 0;
+}
+
+body.extinguished .smoke-1 {
+  animation: smokeRise 2.5s ease-out forwards;
+}
+
+body.extinguished .smoke-2 {
+  animation: smokeRise 3s ease-out 0.3s forwards;
+}
+
+body.extinguished .smoke-3 {
+  animation: smokeRise 3.5s ease-out 0.6s forwards;
+}
+
+@keyframes smokeRise {
+  0% {
+    transform: translateY(0) scale(1) translateX(0);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translateY(-100px) scale(2.5) translateX(-20px);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(-250px) scale(4) translateX(20px);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+  <p id="instruction">Swipe fast to strike</p>
+
+  <div class="scene">
+    <div class="match" id="match">
+      <div id="smoke-container">
+        <div class="smoke smoke-1"></div>
+        <div class="smoke smoke-2"></div>
+        <div class="smoke smoke-3"></div>
+      </div>
+      <div class="flame-container" id="flame-container">
+        <div class="flame"></div>
+        <div class="sparkles" id="sparkles"></div>
+      </div>
+      <div class="match-head" id="match-head"></div>
+      <div class="match-stick"></div>
+    </div>
+  </div>
+<script>
+    const match = document.getElementById('match');
+const instruction = document.getElementById('instruction');
+
+let lastTime = 0;
+let lastX = 0;
+let lastY = 0;
+let isLit = false;
+let heat = 0;
+let lastStrikeSoundTime = 0;
+let resetTimeout = null;
+
+// Config
+const MIN_SPEED_THRESHOLD = 0.5; // px per ms
+const IGNITION_HEAT = 30;
+
+// --- Web Audio API Engine ---
+let audioCtx;
+let fireNoiseSource;
+let fireGainNode;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playStrikeSound(intensity) {
+  initAudio();
+  if (!audioCtx) return;
+
+  const bufferSize = audioCtx.sampleRate * 0.05;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noiseSource = audioCtx.createBufferSource();
+  noiseSource.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 800 + (Math.min(intensity, 5) * 400);
+
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+
+  noiseSource.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  noiseSource.start();
+}
+
+function playIgniteSound() {
+  initAudio();
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.5);
+
+  const oscGain = audioCtx.createGain();
+  oscGain.gain.setValueAtTime(1, audioCtx.currentTime);
+  oscGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+  osc.connect(oscGain);
+  oscGain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.5);
+
+  const bufferSize = audioCtx.sampleRate * 2;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  fireNoiseSource = audioCtx.createBufferSource();
+  fireNoiseSource.buffer = buffer;
+  fireNoiseSource.loop = true;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 300;
+
+  fireGainNode = audioCtx.createGain();
+  fireGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+  fireGainNode.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 1);
+
+  fireNoiseSource.connect(filter);
+  filter.connect(fireGainNode);
+  fireGainNode.connect(audioCtx.destination);
+
+  fireNoiseSource.start();
+}
+
+function playHissSound() {
+  initAudio();
+  if (!audioCtx) return;
+
+  const bufferSize = audioCtx.sampleRate * 0.3;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noiseSource = audioCtx.createBufferSource();
+  noiseSource.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.value = 2000;
+
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+  noiseSource.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  noiseSource.start();
+}
+
+function stopFireSound() {
+  if (fireNoiseSource && fireGainNode) {
+    fireGainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+    setTimeout(() => {
+      if (fireNoiseSource) {
+        fireNoiseSource.stop();
+        fireNoiseSource = null;
+      }
+    }, 300);
+  }
+}
+// -----------------------------
+
+function getEventPos(e) {
+  if (e.touches && e.touches.length > 0) {
+    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+  return { x: e.clientX, y: e.clientY };
+}
+
+function handleMove(e) {
+  if (isLit) return;
+
+  if (e.type === 'touchmove') {
+    e.preventDefault();
+  }
+
+  // If user starts swiping while it's "extinguished", reset it immediately
+  if (document.body.classList.contains('extinguished')) {
+    document.body.classList.remove('extinguished');
+    clearTimeout(resetTimeout);
+  }
+
+  const pos = getEventPos(e);
+  const currentTime = Date.now();
+
+  if (lastTime !== 0) {
+    const deltaTime = currentTime - lastTime;
+
+    if (deltaTime > 0) {
+      const dx = pos.x - lastX;
+      const dy = pos.y - lastY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      const speed = distance / deltaTime;
+
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const isOverMatch = Math.abs(pos.x - centerX) < 150 && Math.abs(pos.y - centerY) < 250;
+
+      if (isOverMatch && speed > MIN_SPEED_THRESHOLD) {
+        heat += speed;
+
+        if (currentTime - lastStrikeSoundTime > 80) {
+          playStrikeSound(speed);
+          lastStrikeSoundTime = currentTime;
+        }
+
+        const shakeX = (Math.random() - 0.5) * Math.min(speed * 2, 10);
+        match.style.transform = `translateX(${shakeX}px) rotate(${shakeX / 2}deg)`;
+
+        if (heat > IGNITION_HEAT) {
+          ignite();
+        }
+      } else {
+        heat = Math.max(0, heat - 2);
+        if (heat === 0) {
+          match.style.transform = `translate(0px) rotate(0deg)`;
+        }
+      }
+    }
+  }
+
+  lastX = pos.x;
+  lastY = pos.y;
+  lastTime = currentTime;
+}
+
+function ignite() {
+  isLit = true;
+  document.body.classList.remove('extinguished');
+  document.body.classList.add('lit');
+  match.style.transform = `translate(0px) rotate(0deg)`;
+  instruction.innerText = "Click to extinguish";
+
+  playIgniteSound();
+
+  setTimeout(() => {
+    instruction.style.opacity = '0.5';
+  }, 2000);
+}
+
+document.addEventListener('mousemove', handleMove);
+document.addEventListener('touchmove', handleMove, { passive: false });
+
+document.body.addEventListener('click', () => {
+  initAudio();
+
+  if (isLit) {
+    isLit = false;
+    heat = 0;
+
+    // Extinguish the match!
+    document.body.classList.remove('lit');
+    document.body.classList.add('extinguished');
+
+    instruction.style.opacity = '1';
+    instruction.innerText = "Swipe fast to strike";
+
+    stopFireSound();
+    playHissSound(); // Play the little "tsss" smoke sound
+
+    // Fully reset match visuals after smoke clears
+    clearTimeout(resetTimeout);
+    resetTimeout = setTimeout(() => {
+      if (document.body.classList.contains('extinguished')) {
+        document.body.classList.remove('extinguished');
+      }
+    }, 4000);
+  }
+});
+</script>
+</body>
+</html>
