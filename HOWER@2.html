@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+body {
+  height:100vh;  
+  font-family: "Titan One", sans-serif;
+  background:#ffd;
+}
+.btns{
+  display:flex;
+  flex-direction:column;
+  gap:1em;
+  width:fit-content;
+  margin:19vh auto
+}
+
+.btn{
+  text-decoration:none;
+  width:8em;
+  height:3em;
+  display:block;
+  box-sizing:border-box; 
+  opacity: 0;
+   animation: entrance 0.85s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  animation-delay: calc((sibling-index() - 1) * 0.1s);
+  span{
+  display:block;
+  max-width:100%;
+  background:#023;
+  padding:1em;
+  text-align:center;
+  color:#ffe;
+   font-size:1em;
+  box-shadow:4px 4px 0 #000;
+    corner-shape: squircle;
+  border-radius:20px;
+  transition:all 0.2s cubic-bezier(0.7, -0.35, 0.27, 1.55);
+   pointer-events:none; 
+  }
+}
+.btn:hover span{
+   box-shadow:4px 4px 0 #000,0 0 0 3px  #ffe inset;
+   font-size:1.2em;
+    background:#185;
+    color:#fff;
+    animation: squish .1s 1 ease-in forwards
+  }
+@keyframes squish{
+  0% {  transform: scale(1.2,.58) rotate(-5deg);   }
+  100% { transform: scale(1,1) rotate(-4deg) ; }
+}
+
+@keyframes entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+    </style>
+</head>
+<body>
+    <div class="btns">
+  <a href="#" class="btn"><span>Like</span></a>
+  <a href="#" class="btn"><span>Comment</span></a>
+  <a href="#" class="btn"><span>Subscribe</span></a>
+  <a href="#" class="btn"><span>Share</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <style>
+    :root {
+  --input-w: 301px;
+  --input-h: 56px;
+  --radius: 10px;
+
+  /* Layer boxes slightly larger than input to show borders */
+  --frame-w: calc(var(--input-w) + 6px);
+  --frame-h: calc(var(--input-h) + 6px);
+  --frame2-w: calc(var(--input-w) + 10px);
+  --frame2-h: calc(var(--input-h) + 10px);
+
+  --bg: #121212;
+}
+
+/* Utility: for accessible label */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px,1px,1px,1px);
+  white-space: nowrap;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #0b0b0b;
+  color: #fff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+.grid {
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg);
+  background-image: radial-gradient(#151515 1px, transparent 1px);
+  background-size: 1rem 1rem;
+  background-position: center center;
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  filter: blur(1px);
+}
+
+/* Root wrapper centered */
+#poda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+}
+
+/* Positioning reference for layers */
+#main {
+  position: relative;
+  width: var(--input-w);
+  height: var(--input-h);
+}
+
+/* Input */
+.input {
+  background-color: #010201;
+  border: none;
+  width: var(--input-w);
+  height: var(--input-h);
+  border-radius: var(--radius);
+  color: white;
+  padding-inline: 59px 52px;
+  font-size: 18px;
+  position: relative;
+  z-index: 3;
+}
+
+.input::placeholder {
+  color: #c0b9c0;
+}
+.input:focus {
+  outline: 2px solid #2b2752;
+  outline-offset: 0;
+}
+
+/* Masks */
+#input-mask {
+  pointer-events: none;
+  width: 100px;
+  height: 20px;
+  position: absolute;
+  background: linear-gradient(90deg, transparent, black);
+  top: 18px;
+  left: 70px;
+  z-index: 4;
+}
+#main:focus-within > #input-mask {
+  display: none;
+}
+
+#pink-mask {
+  pointer-events: none;
+  width: 30px;
+  height: 20px;
+  position: absolute;
+  background: #cf30aa;
+  top: 10px;
+  left: 5px;
+  filter: blur(20px);
+  opacity: 0.8;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+#main:hover > #pink-mask {
+  opacity: 0;
+}
+
+/* Iconss */
+#search-icon {
+  position: absolute;
+  left: 20px;
+  top: 15px;
+  z-index: 4;
+}
+
+#filter-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  height: 40px;
+  width: 38px;
+
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #161329, black, #1d1b4b);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+#filter-icon:focus-visible {
+  outline: 2px solid #6356d8;
+  outline-offset: 2px;
+}
+
+/* Filter border ring */
+.filterBorder {
+  height: 42px;
+  width: 40px;
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 3;
+}
+.filterBorder::before {
+  content: "";
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  filter: brightness(1.35);
+  background-image: conic-gradient(
+    rgba(0, 0, 0, 0),
+    #3d3a4f,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0) 50%,
+    #3d3a4f,
+    rgba(0, 0, 0, 0) 100%
+  );
+  animation: rotate 4s linear infinite;
+}
+
+/* Layered gradient frames (behind input) */
+.white,
+.border,
+.darkBorderBg,
+.glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.white,
+.border,
+.darkBorderBg {
+  width: var(--frame-w);
+  height: var(--frame-h);
+  filter: blur(3px);
+  max-width: 314px;
+  max-height: 70px;
+}
+
+.white {
+  filter: blur(2px);
+  max-width: 307px;
+  max-height: 63px;
+}
+.white::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(83deg);
+  width: 600px;
+  height: 600px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  filter: brightness(1.4);
+  background-image: conic-gradient(
+    rgba(0, 0, 0, 0) 0%,
+    #a099d8,
+    rgba(0, 0, 0, 0) 8%,
+    rgba(0, 0, 0, 0) 50%,
+    #dfa2da,
+    rgba(0, 0, 0, 0) 58%
+  );
+  transition: transform 2s ease;
+}
+
+.border {
+  filter: blur(0.5px);
+  max-width: 303px;
+  max-height: 59px;
+}
+.border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(70deg);
+  width: 600px;
+  height: 600px;
+  filter: brightness(1.3);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-image: conic-gradient(
+    #1c191c,
+    #402fb5 5%,
+    #1c191c 14%,
+    #1c191c 50%,
+    #cf30aa 60%,
+    #1c191c 64%
+  );
+  transition: transform 2s ease;
+}
+
+.darkBorderBg {
+  max-width: 312px;
+  max-height: 65px;
+}
+.darkBorderBg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(82deg);
+  width: 600px;
+  height: 600px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-image: conic-gradient(
+    rgba(0, 0, 0, 0),
+    #18116a,
+    rgba(0, 0, 0, 0) 10%,
+    rgba(0, 0, 0, 0) 50%,
+    #6e1b60,
+    rgba(0, 0, 0, 0) 60%
+  );
+  transition: transform 2s ease;
+}
+
+/* Glow layer larger than frames */
+.glow {
+  width: var(--frame2-w);
+  height: var(--frame2-h);
+  filter: blur(30px);
+  opacity: 0.4;
+  max-width: 354px;
+  max-height: 130px;
+}
+.glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(60deg);
+  width: 999px;
+  height: 999px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-image: conic-gradient(
+    #000,
+    #402fb5 5%,
+    #000 38%,
+    #000 50%,
+    #cf30aa 60%,
+    #000 87%
+  );
+  transition: transform 2s ease;
+}
+
+/* Interactions: hover */
+#poda:hover > .darkBorderBg::before {
+  transform: translate(-50%, -50%) rotate(262deg);
+}
+#poda:hover > .glow::before {
+  transform: translate(-50%, -50%) rotate(240deg);
+}
+#poda:hover > .white::before {
+  transform: translate(-50%, -50%) rotate(263deg);
+}
+#poda:hover > .border::before {
+  transform: translate(-50%, -50%) rotate(250deg);
+}
+
+/* Interactions: focus within (keyboard focus on input) */
+#poda:focus-within > .darkBorderBg::before {
+  transform: translate(-50%, -50%) rotate(442deg);
+  transition: transform 4s ease;
+}
+#poda:focus-within > .glow::before {
+  transform: translate(-50%, -50%) rotate(420deg);
+  transition: transform 4s ease;
+}
+#poda:focus-within > .white::before {
+  transform: translate(-50%, -50%) rotate(443deg);
+  transition: transform 4s ease;
+}
+#poda:focus-within > .border::before {
+  transform: translate(-50%, -50%) rotate(430deg);
+  transition: transform 4s ease;
+}
+
+/* Animations */
+@keyframes rotate {
+  100% {
+    transform: translate(-50%, -50%) rotate(450deg);
+  }
+}
+  </style>
+  <title>Glowing Search Bar | Copyright by @coding.stella</title>
+</head>
+<body>
+  <div class="grid"></div>
+
+  <div id="poda" role="search">
+    <!-- Layered gradient frames -->
+    <div class="glow" aria-hidden="true"></div>
+    <div class="darkBorderBg" aria-hidden="true"></div>
+    <div class="darkBorderBg" aria-hidden="true"></div>
+    <div class="darkBorderBg" aria-hidden="true"></div>
+    <div class="white" aria-hidden="true"></div>
+    <div class="border" aria-hidden="true"></div>
+
+    <!-- Main control -->
+    <div id="main">
+      <label for="search-input" class="visually-hidden">Search</label>
+      <input
+        id="search-input"
+        placeholder="Search..."
+        type="text"
+        name="text"
+        class="input"
+        aria-label="Search"
+        autocomplete="off"
+      />
+      <div id="input-mask" aria-hidden="true"></div>
+      <div id="pink-mask" aria-hidden="true"></div>
+
+      <div class="filterBorder" aria-hidden="true"></div>
+
+      <button id="filter-icon" type="button" aria-label="Open filters">
+        <svg
+          preserveAspectRatio="none"
+          height="27"
+          width="27"
+          viewBox="4.8 4.56 14.832 15.408"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M8.16 6.65002H15.83C16.47 6.65002 16.99 7.17002 16.99 7.81002V9.09002C16.99 9.56002 16.7 10.14 16.41 10.43L13.91 12.64C13.56 12.93 13.33 13.51 13.33 13.98V16.48C13.33 16.83 13.1 17.29 12.81 17.47L12 17.98C11.24 18.45 10.2 17.92 10.2 16.99V13.91C10.2 13.5 9.97 12.98 9.73 12.69L7.52 10.36C7.23 10.08 7 9.55002 7 9.20002V7.87002C7 7.17002 7.52 6.65002 8.16 6.65002Z"
+            stroke="#d6d6e6"
+            stroke-width="1"
+            stroke-miterlimit="10"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+      </button>
+
+      <div id="search-icon" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+          height="24"
+          fill="none"
+          class="feather feather-search"
+          aria-hidden="true"
+        >
+          <circle stroke="url(#search)" r="8" cy="11" cx="11"></circle>
+          <line
+            stroke="url(#searchl)"
+            y2="16.65"
+            y1="22"
+            x2="16.65"
+            x1="22"
+          ></line>
+          <defs>
+            <linearGradient gradientTransform="rotate(50)" id="search">
+              <stop stop-color="#f8e7f8" offset="0%"></stop>
+              <stop stop-color="#b6a9b7" offset="50%"></stop>
+            </linearGradient>
+            <linearGradient id="searchl">
+              <stop stop-color="#b6a9b7" offset="0%"></stop>
+              <stop stop-color="#837484" offset="50%"></stop>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

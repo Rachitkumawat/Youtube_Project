@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .link {
+  --b: 10px; /* line thickness */
+  --l: 500px; /* the wanted line length */
+  
+  pointer-events: none;
+  --x: attr(x type(<custom-ident>));
+  --y: attr(y type(<custom-ident>));
+}
+
+.link * {
+  position: absolute;
+  --_x: calc(anchor(var(--x) inside) + anchor-size(var(--x))/2 - .1px);
+  --_y: calc(anchor(var(--y) inside) + anchor-size(var(--y))/2);
+  container-type: size;
+}
+.link :is(a,b) {top:  var(--_x); bottom: var(--_y)}
+.link :is(a,c) {left: var(--_x); right:  var(--_y)}
+.link :is(c,d) {top:  var(--_y); bottom: var(--_x)}
+.link :is(b,d) {left: var(--_y); right:  var(--_x)}
+
+.link *:before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: hypot(100cqh,100cqw);
+  /*--e: 1.5;
+  height: calc((2/var(--n))*pow(pow(var(--l)/1px,var(--e)) - pow(hypot(100cqh,100cqw)/1px,var(--e)),1/var(--e))*1px);*/
+  --n: 4; 
+  height: calc((2/var(--n))*(var(--l) - (pow(hypot(100cqh,100cqw)/1px,2)/(var(--l)/1px))*1px));
+  --_b: max(6px,var(--b)*min(1,1.2*var(--l)/hypot(100cqh,100cqw)));
+  transform: translate(0,50%) rotate(atan(100cqh/100cqw)) translate(0,calc(var(--_b)/2));
+  border-bottom: var(--_b) dashed #556270;
+  transform-origin: right;
+  display: if(style(calc(sign(1cqw)*sign(1cqh)) = 0):none);
+  border-shape: shape(from 0 50%,curve to 25% 50% with 12.5% 0,smooth to 50% 50%,smooth to 75% 50%,smooth to 100% 50%) padding-box;
+}
+/* we don't have loops so we need to manually change the shape */
+.link + .link *:before {
+  --n: 5;
+  border-shape: shape(from 0 50%,curve to 20% 50% with 10% 0,smooth to 40% 50%,smooth to 60% 50%,smooth to 80% 50%,smooth to 100% 50%) padding-box;
+}
+
+.link b {scale: -1  1}
+.link c {scale:  1 -1}
+.link d {scale: -1 -1}
+
+.link :is(b,c):before,
+.link :is(b,c):after {
+  transform: translate(0,50%) rotate(atan(100cqh/100cqw)) translate(0,calc(var(--_b)/-2)) scale(1,-1);
+}
+
+.circle {
+  position: absolute;
+  left: 10%;
+  top: 10%;
+  width: 120px;
+  aspect-ratio: 1;
+  background: 
+    radial-gradient(#556270 12px,#0000 13px) 
+    #45ADA8;
+  border-radius: 50%;
+  anchor-name: attr(name type(<custom-ident>));
+}
+.circle + .circle {
+  background-color: #FA6900;
+  left: 42%;
+  top: 30%;
+}
+.circle + * + .circle {
+  background-color: #bc4749;
+  left: 72%;
+  top: 3%;
+}
+
+
+@supports not (border-shape: inset(0)) {
+  body:before {
+    content:"Sorry but it's Chrome-only for now";
+    font: bold 40px system-ui;
+    text-align: center;
+    padding-top: 30vh;
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 3;
+  }
+}
+    </style>
+</head>
+<body>
+    <div class="circle" name="--a" ></div>
+<div class="circle" name="--b" ></div>
+<div class="circle" name="--c" ></div>
+
+<div class="link" x="--a" y="--b">
+  <a></a>
+  <b></b>
+  <c></c>
+  <d></d>
+</div>
+
+<div class="link" x="--b" y="--c"  style="--l: 600px;">
+  <a></a>
+  <b></b>
+  <c></c>
+  <d></d>
+</div>
+</body>
+<script>
+    const A = document.querySelectorAll('.circle');
+let D = [];
+let O = [[]];
+
+for(let i = 0;i<A.length;i++) {
+  D[i] = 0;O[i] = [];
+  A[i].addEventListener('mousedown', (e) => {
+    D[i] = 1;
+    const rect = e.target.getBoundingClientRect();
+    O[i][0] = e.clientX - rect.left;
+    O[i][1] = e.clientY - rect.top;
+  });
+}
+
+document.addEventListener('mousemove', (e) => {
+  for(let i = 0;i<A.length;i++) {
+    if(D[i]) {
+      A[i].style.left = (e.clientX - O[i][0]) + 'px';
+      A[i].style.top = (e.clientY - O[i][1]) + 'px';
+    }
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  for(let i = 0;i<A.length;i++) {D[i] = 0;}
+});
+</script>
+</html>

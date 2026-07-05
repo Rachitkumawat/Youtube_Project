@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Geometric Aura · Modern Visual</title>
+    <style>
+        body{margin:0;overflow:hidden;font-family:Inter,Segoe UI,PingFang SC,Roboto,Helvetica Neue,sans-serif}
+        body:before{background:radial-gradient(circle at 20% 30%,rgba(10,20,40,.8),rgba(0,0,0,.95));z-index:-2}
+        body:after,body:before{content:"";position:fixed;top:0;left:0;width:100%;height:100%}
+        body:after{background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");z-index:-1}
+        .info,body:after{pointer-events:none}
+        .info{position:absolute;bottom:24px;left:0;right:0;text-align:center;color:hsla(0,0%,100%,.7);font-size:14px;letter-spacing:1px;font-weight:400;backdrop-filter:blur(8px);background:rgba(0,0,0,.3);width:fit-content;margin:0 auto;padding:8px 20px;border-radius:40px;z-index:10;font-family:monospace;border:1px solid hsla(0,0%,100%,.15)}
+        .info a{color:#8cf;text-decoration:none;pointer-events:auto;transition:color .3s}
+        .info a:hover{color:#fff;text-decoration:underline}
+        @media (max-width:600px){.info{font-size:10px;bottom:16px;padding:6px 16px}}
+        #loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-family:monospace;background:rgba(0,0,0,.6);padding:12px 24px;border-radius:30px;z-index:100;backdrop-filter:blur(5px);transition:opacity 1s;pointer-events:none}
+    </style>
+</head>
+<body>
+  <div class="info">
+    ✦ 3D Geometric Aura ✦ | <span style="color:#88ccff">Drag to rotate view</span> | Inspired Iteration · Refreshed Presentation
+  </div>
+  <div id="loading">Loading visual engine...</div>
+
+  <!-- IMPORTANT: type="module" add karna zaroori hai -->
+  <script type="module">
+    import * as THREE from "https://esm.sh/three";
+    import {OrbitControls} from "https://esm.sh/three/addons/controls/OrbitControls.js";
+    import {EffectComposer} from "https://esm.sh/three/addons/postprocessing/EffectComposer.js";
+    import {RenderPass} from "https://esm.sh/three/addons/postprocessing/RenderPass.js";
+    import {UnrealBloomPass} from "https://esm.sh/three/addons/postprocessing/UnrealBloomPass.js";
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050a0a);
+    scene.fog = new THREE.FogExp2(0x050a0a, 0.008);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(3, 2, 5);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.toneMapping = THREE.ReinhardToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    document.body.appendChild(renderer.domElement);
+
+    const renderScene = new RenderPass(scene, camera);
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      1.2, 0.3, 0.85
+    );
+    bloomPass.threshold = 0.1;
+    bloomPass.strength = 0.8;
+    bloomPass.radius = 0.5;
+
+    const effectComposer = new EffectComposer(renderer);
+    effectComposer.addPass(renderScene);
+    effectComposer.addPass(bloomPass);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.2;
+    controls.enableZoom = true;
+    controls.enablePan = false;
+    controls.zoomSpeed = 1;
+    controls.rotateSpeed = 1;
+    controls.target.set(0, 0, 0);
+
+    const ambientLight = new THREE.AmbientLight(0x222222);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    mainLight.position.set(2, 3, 4);
+    scene.add(mainLight);
+
+    const backLight = new THREE.PointLight(0x4466cc, 0.6);
+    backLight.position.set(-2, 1, -3);
+    scene.add(backLight);
+
+    const fillLight = new THREE.PointLight(0xffaa66, 0.5);
+    fillLight.position.set(1.5, 1, 2);
+    scene.add(fillLight);
+
+    const colorLight = new THREE.PointLight(0xff66aa, 0.8);
+    colorLight.position.set(1, 1, 2);
+    scene.add(colorLight);
+
+    // Stars
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 800;
+    const starPositions = new Float32Array(starCount * 3);
+    for(let i = 0; i < starCount; i++) {
+      starPositions[i*3] = (Math.random() - 0.5) * 200;
+      starPositions[i*3+1] = (Math.random() - 0.5) * 100;
+      starPositions[i*3+2] = (Math.random() - 0.5) * 80 - 40;
+    }
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMaterial = new THREE.PointsMaterial({
+      color: 0xaaaaff,
+      size: 0.08,
+      transparent: true,
+      opacity: 0.6
+    });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // Core Mesh
+    const geometryIco = new THREE.IcosahedronGeometry(1.1, 0);
+    const materialMain = new THREE.MeshStandardMaterial({
+      color: 0x4a7a9c,
+      emissive: 0x112233,
+      roughness: 0.28,
+      metalness: 0.75,
+      flatShading: false,
+      transparent: true,
+      opacity: 0.92
+    });
+    const coreMesh = new THREE.Mesh(geometryIco, materialMain);
+    scene.add(coreMesh);
+
+    // Wireframe
+    const wireframeMat = new THREE.MeshBasicMaterial({
+      color: 0x66ccff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.25
+    });
+    const wireframeIco = new THREE.Mesh(geometryIco, wireframeMat);
+    wireframeIco.scale.setScalar(1.08);
+    scene.add(wireframeIco);
+
+    // Ring Particles
+    const ringParticleCount = 1200;
+    const ringGeometry = new THREE.BufferGeometry();
+    const ringPositions = new Float32Array(ringParticleCount * 3);
+    const ringColors = new Float32Array(ringParticleCount * 3);
+    for(let i = 0; i < ringParticleCount; i++) {
+      const angle = (i / ringParticleCount) * Math.PI * 2;
+      const radius = 1.55;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      const y = Math.sin(angle * 3) * 0.35;
+      
+      ringPositions[i*3] = x;
+      ringPositions[i*3+1] = y;
+      ringPositions[i*3+2] = z;
+      
+      ringColors[i*3] = 0.4 + Math.sin(angle) * 0.6;
+      ringColors[i*3+1] = 0.3 + Math.cos(angle * 1.7) * 0.7;
+      ringColors[i*3+2] = 0.8 + Math.sin(angle * 2.3) * 0.2;
+    }
+    ringGeometry.setAttribute('position', new THREE.BufferAttribute(ringPositions, 3));
+    ringGeometry.setAttribute('color', new THREE.BufferAttribute(ringColors, 3));
+    const ringMaterial = new THREE.PointsMaterial({
+      size: 0.05,
+      vertexColors: true,
+      transparent: true,
+      blending: THREE.AdditiveBlending
+    });
+    const ringParticles = new THREE.Points(ringGeometry, ringMaterial);
+    scene.add(ringParticles);
+
+    // Torus Rings
+    const torusMat = new THREE.MeshStandardMaterial({
+      color: 0x88bbff,
+      emissive: 0x226699,
+      roughness: 0.3,
+      metalness: 0.9
+    });
+    const torusRing = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.045, 64, 500), torusMat);
+    scene.add(torusRing);
+
+    const torusRing2 = new THREE.Mesh(new THREE.TorusGeometry(1.68, 0.03, 64, 500), torusMat.clone());
+    torusRing2.material.color.setHex(0xffbb88);
+    torusRing2.material.emissive.setHex(0x442200);
+    scene.add(torusRing2);
+
+    // Cloud Particles
+    const cloudParticleCount = 800;
+    const cloudGeo = new THREE.BufferGeometry();
+    const cloudPositions = new Float32Array(cloudParticleCount * 3);
+    for(let i = 0; i < cloudParticleCount; i++) {
+      cloudPositions[i*3] = (Math.random() - 0.5) * 5;
+      cloudPositions[i*3+1] = (Math.random() - 0.5) * 3;
+      cloudPositions[i*3+2] = (Math.random() - 0.5) * 4 - 1;
+    }
+    cloudGeo.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
+    const cloudMat = new THREE.PointsMaterial({
+      color: 0x7799ff,
+      size: 0.025,
+      transparent: true,
+      opacity: 0.4,
+      blending: THREE.AdditiveBlending
+    });
+    const cloudPoints = new THREE.Points(cloudGeo, cloudMat);
+    scene.add(cloudPoints);
+
+    // Grid
+    const gridHelper = new THREE.GridHelper(12, 24, 0x88bbff, 0x335588);
+    gridHelper.position.y = -1.8;
+    gridHelper.material.transparent = true;
+    gridHelper.material.opacity = 0.2;
+    scene.add(gridHelper);
+
+    // Loading hide
+    setTimeout(() => {
+      const loading = document.getElementById('loading');
+      if(loading) {
+        loading.style.opacity = '0';
+        setTimeout(() => loading.remove(), 1000);
+      }
+    }, 500);
+
+    // Animation
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.012;
+      
+      coreMesh.rotation.y = time * 0.25;
+      coreMesh.rotation.x = Math.sin(time * 0.37) * 0.2;
+      coreMesh.rotation.z = Math.cos(time * 0.23) * 0.15;
+      wireframeIco.rotation.copy(coreMesh.rotation);
+      
+      ringParticles.rotation.y = time * 0.35;
+      ringParticles.rotation.x = Math.sin(time * 0.28) * 0.2;
+      
+      torusRing.rotation.x = Math.PI / 2;
+      torusRing.rotation.z = time * 0.5;
+      torusRing2.rotation.x = Math.PI / 2 + 0.3;
+      torusRing2.rotation.z = time * 0.65;
+      
+      const hue = (time * 0.2) % (Math.PI * 2);
+      colorLight.color.setHSL(0.55 + Math.sin(hue) * 0.1, 1, 0.6);
+      
+      stars.rotation.y += 0.0005;
+      stars.rotation.x += 0.0003;
+      
+      cloudPoints.rotation.y = time * 0.05;
+      cloudPoints.rotation.x = Math.sin(time * 0.1) * 0.1;
+      
+      controls.update();
+      effectComposer.render();
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      effectComposer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    animate();
+    window.addEventListener('resize', onWindowResize, false);
+    console.log('3D Scene Ready | Modern Visual');
+  </script>
+</body>
+</html>
