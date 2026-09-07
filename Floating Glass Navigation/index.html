@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A developer workspace for projects, experiments, and creative web builds." />
+  <title>Floating Glass Navigation Bar | Created by @coding.stella</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="orb orb-one" aria-hidden="true"></div>
+  <div class="orb orb-two" aria-hidden="true"></div>
+  <div class="orb orb-three" aria-hidden="true"></div>
+
+  <main class="shell">
+    <header class="hero">
+      <div class="brand-mark" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <p class="eyebrow">DEVSPACE / DEVELOPER WORKSPACE</p>
+      <div class="title-wrap">
+        <h1 id="pageTitle">Projects</h1>
+        <span class="title-dot" aria-hidden="true"></span>
+      </div>
+      <p class="subline" id="subline">
+        Building interfaces, experiments, and interactive web experiences.
+      </p>
+    </header>
+
+    <nav class="dock" aria-label="Developer navigation">
+      <div class="dock-glow" aria-hidden="true"></div>
+
+      <div class="nav-track" id="navTrack">
+        <div class="active-bead" id="activeBead" aria-hidden="true"></div>
+
+        <!-- Explore -->
+        <button class="nav-item" data-page="Explore" type="button">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="m8 8-5 4 5 4" />
+              <path d="m16 8 5 4-5 4" />
+              <path d="m14 5-4 14" />
+            </svg>
+          </span>
+          <span>Explore</span>
+        </button>
+
+        <!-- Work -->
+        <button class="nav-item" data-page="Work" type="button">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 7h16v13H4z" />
+              <path d="M8 7V4h8v3" />
+              <path d="M4 12h16" />
+            </svg>
+          </span>
+          <span>Work</span>
+        </button>
+
+        <!-- Projects -->
+        <button class="nav-item active" data-page="Projects" type="button">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="m8 8-4 4 4 4" />
+              <path d="m16 8 4 4-4 4" />
+              <path d="m14 5-4 14" />
+            </svg>
+          </span>
+          <span>Projects</span>
+        </button>
+
+        <!-- Connect -->
+        <button class="nav-item" data-page="Connect" type="button">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M5 12h14" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
+          </span>
+          <span>Connect</span>
+        </button>
+      </div>
+
+      <button class="mode-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <span class="mode-icon sun-icon" aria-hidden="true">☼</span>
+        <span class="mode-icon moon-icon" aria-hidden="true">◐</span>
+      </button>
+    </nav>
+
+    <div class="hint">
+      <span>Navigate</span>
+      <kbd>←</kbd><kbd>→</kbd>
+      <span class="hint-separator"></span>
+      <span>or select a section</span>
+    </div>
+
+    <section class="preview" id="preview" aria-live="polite">
+      <div class="preview-line"></div>
+      <div class="preview-copy">
+        <span class="preview-label" id="previewLabel">BUILD / 03</span>
+        <h2 id="previewTitle">Projects worth exploring.</h2>
+        <p id="previewText">
+          A collection of web projects, UI experiments, and creative coding
+          builds.
+        </p>
+      </div>
+      <div class="preview-number" id="previewNumber">03</div>
+    </section>
+
+    <footer class="footer">
+      <span>© <span id="year"></span> Devspace</span>
+      <span>Built with code & curiosity</span>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
